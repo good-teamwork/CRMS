@@ -184,9 +184,9 @@ export default function TransactionsPage() {
   });
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("en-IN", {
       style: "currency",
-      currency: "USD",
+      currency: "INR",
     }).format(amount);
   };
 
@@ -624,7 +624,7 @@ export default function TransactionsPage() {
                         <div className="text-sm font-medium">
                           {transaction.is_cash_transaction ? (
                             <span className="text-orange-400">
-                              Revenue: $0.00
+                              Revenue: ₹0.00
                             </span>
                           ) : (
                             <span className="text-green-400">
@@ -756,7 +756,7 @@ export default function TransactionsPage() {
                       <span className="text-white/70">Revenue:</span>
                       <span className={`font-medium ${selectedTransaction.is_cash_transaction ? 'text-orange-400' : 'text-green-400'}`}>
                         {selectedTransaction.is_cash_transaction 
-                          ? '$0.00' 
+                          ? '₹0.00' 
                           : formatCurrency(selectedTransaction.our_revenue || 0)
                         }
                       </span>

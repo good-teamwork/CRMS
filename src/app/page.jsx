@@ -283,9 +283,9 @@ export default function Dashboard() {
   const effectiveStats = useMock ? mockedStats : stats;
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("en-IN", {
       style: "currency",
-      currency: "USD",
+      currency: "INR",
     }).format(amount);
   };
 
@@ -763,9 +763,9 @@ export default function Dashboard() {
                       />
                       <YAxis
                         tickFormatter={(value) => {
-                          if (!value || value === 0) return '$0';
-                          if (value >= 1000) return `$${(value / 1000).toFixed(0)}k`;
-                          return `$${value.toFixed(0)}`;
+                          if (!value || value === 0) return '₹0';
+                          if (value >= 1000) return `₹${(value / 1000).toFixed(0)}k`;
+                          return `₹${value.toFixed(0)}`;
                         }}
                         tick={{ fill: 'rgba(255,255,255,0.7)', fontSize: 12 }}
                         axisLine={{ stroke: 'rgba(255,255,255,0.2)' }}
@@ -847,9 +847,9 @@ export default function Dashboard() {
                           />
                           <YAxis
                             tickFormatter={(value) => {
-                              if (!value || value === 0) return '$0';
-                              if (value >= 1000) return `$${(value / 1000).toFixed(0)}k`;
-                              return `$${value.toFixed(0)}`;
+                              if (!value || value === 0) return '₹0';
+                              if (value >= 1000) return `₹${(value / 1000).toFixed(0)}k`;
+                              return `₹${value.toFixed(0)}`;
                             }}
                             tick={{ fill: 'rgba(255,255,255,0.7)', fontSize: 12 }}
                             axisLine={{ stroke: 'rgba(255,255,255,0.2)' }}

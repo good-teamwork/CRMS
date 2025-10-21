@@ -392,7 +392,7 @@ export default function MerchantsPage() {
                     onChange={(e) =>
                       handleFormChange("estimated_monthly_volume", e.target.value)
                     }
-                    placeholder="Enter amount in USD"
+                    placeholder="Enter amount in INR"
                   />
                 </div>
               </div>
@@ -782,7 +782,7 @@ export default function MerchantsPage() {
                           e.target.value,
                         )
                       }
-                      placeholder="Enter amount in USD"
+                      placeholder="Enter amount in INR"
                     />
                   </div>
                 </div>
@@ -1372,7 +1372,7 @@ export default function MerchantsPage() {
                     <label className="text-sm text-white/70">Monthly Limit</label>
                     <div className="text-white font-medium text-lg">
                       {selectedMerchant.monthly_processing_limit
-                        ? `$${parseFloat(selectedMerchant.monthly_processing_limit).toLocaleString()}`
+                        ? `₹${parseFloat(selectedMerchant.monthly_processing_limit).toLocaleString()}`
                         : "Not set"}
                     </div>
                   </div>
