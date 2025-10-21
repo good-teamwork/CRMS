@@ -946,17 +946,24 @@ export default function MerchantsPage() {
                 <div className="w-10 h-10 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl flex items-center justify-center">
                   <Filter className="h-5 w-5 text-white/80" />
                 </div>
-                <div className="input-field gradient-border shimmer">
+                <div className="input-field gradient-border shimmer relative">
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className="appearance-none"
+                    className="appearance-none w-full bg-transparent text-white/90 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400/50 transition-all duration-200 cursor-pointer relative z-50"
+                    style={{ 
+                      backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e")`,
+                      backgroundPosition: 'right 12px center',
+                      backgroundRepeat: 'no-repeat',
+                      backgroundSize: '16px',
+                      paddingRight: '40px'
+                    }}
                   >
-                    <option value="">All Status</option>
-                    <option value="active">Active</option>
-                    <option value="pending">Pending</option>
-                    <option value="under_review">Under Review</option>
-                    <option value="suspended">Suspended</option>
+                    <option value="" className="bg-gray-800 text-white">All Status</option>
+                    <option value="active" className="bg-gray-800 text-white">Active</option>
+                    <option value="pending" className="bg-gray-800 text-white">Pending</option>
+                    <option value="under_review" className="bg-gray-800 text-white">Under Review</option>
+                    <option value="suspended" className="bg-gray-800 text-white">Suspended</option>
                   </select>
                 </div>
               </div>
@@ -1232,142 +1239,183 @@ export default function MerchantsPage() {
 
       {/* Merchant Details Modal */}
       {showDetailsModal && selectedMerchant && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="px-6 py-4 border-b border-gray-200">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white/10 backdrop-blur-xl rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-white/20 shadow-2xl">
+            <div className="px-8 py-6 border-b border-white/20">
               <div className="flex justify-between items-center">
-                <div className="flex items-center">
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    Merchant Details
-                  </h3>
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                    <Building2 className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-white">
+                      Merchant Details
+                    </h3>
+                    <p className="text-white/70">
+                      {selectedMerchant.business_name}
+                    </p>
+                  </div>
                   {selectedMerchant.is_loyal_merchant && (
-                    <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                      <Crown className="h-3 w-3 mr-1" />
+                    <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-gradient-to-r from-yellow-400/20 to-orange-400/20 text-yellow-300 border border-yellow-400/30">
+                      <Crown className="h-4 w-4 mr-2" />
                       Loyal Merchant
                     </span>
                   )}
                 </div>
                 <button
                   onClick={() => setShowDetailsModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center text-white/60 hover:text-white transition-all duration-300 hover:scale-110"
                 >
                   <X className="h-6 w-6" />
                 </button>
               </div>
             </div>
-            <div className="p-6">
+            <div className="px-8 py-6 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-3">
+                {/* Business Information */}
+                <div className="bg-white/5 rounded-xl p-6">
+                  <h4 className="text-lg font-semibold text-white mb-4 flex items-center">
+                    <Building2 className="h-5 w-5 mr-2 text-blue-400" />
                     Business Information
                   </h4>
-                  <div className="space-y-2 text-sm">
+                  <div className="space-y-3">
                     <div>
-                      <span className="font-medium">Name:</span>{" "}
-                      {selectedMerchant.business_name}
+                      <label className="text-sm text-white/70">Business Name</label>
+                      <div className="text-white font-medium">
+                        {selectedMerchant.business_name}
+                      </div>
                     </div>
                     <div>
-                      <span className="font-medium">Type:</span>{" "}
-                      {selectedMerchant.business_type}
+                      <label className="text-sm text-white/70">Business Type</label>
+                      <div className="text-white font-medium">
+                        {selectedMerchant.business_type}
+                      </div>
                     </div>
                     <div>
-                      <span className="font-medium">Website:</span>{" "}
-                      {selectedMerchant.website || "N/A"}
+                      <label className="text-sm text-white/70">Website</label>
+                      <div className="text-white/60">
+                        {selectedMerchant.website || "N/A"}
+                      </div>
                     </div>
                     <div>
-                      <span className="font-medium">Status:</span>
-                      <span
-                        className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(selectedMerchant.status)}`}
-                      >
-                        {selectedMerchant.status}
-                      </span>
+                      <label className="text-sm text-white/70">Status</label>
+                      <div className="mt-1">
+                        <span
+                          className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedMerchant.status)}`}
+                        >
+                          {selectedMerchant.status}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-3">
+
+                {/* Contact Information */}
+                <div className="bg-white/5 rounded-xl p-6">
+                  <h4 className="text-lg font-semibold text-white mb-4 flex items-center">
+                    <Mail className="h-5 w-5 mr-2 text-green-400" />
                     Contact Information
                   </h4>
-                  <div className="space-y-2 text-sm">
+                  <div className="space-y-3">
                     <div>
-                      <span className="font-medium">Contact:</span>{" "}
-                      {selectedMerchant.contact_name}
+                      <label className="text-sm text-white/70">Contact Name</label>
+                      <div className="text-white font-medium">
+                        {selectedMerchant.contact_name}
+                      </div>
                     </div>
                     <div>
-                      <span className="font-medium">Email:</span>{" "}
-                      {selectedMerchant.email}
+                      <label className="text-sm text-white/70">Email</label>
+                      <div className="text-white font-medium">
+                        {selectedMerchant.email}
+                      </div>
                     </div>
                     <div>
-                      <span className="font-medium">Phone:</span>{" "}
-                      {selectedMerchant.phone || "N/A"}
+                      <label className="text-sm text-white/70">Phone</label>
+                      <div className="text-white/60">
+                        {selectedMerchant.phone || "N/A"}
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div className="md:col-span-2">
-                  <h4 className="font-medium text-gray-900 mb-3">Address</h4>
-                  <div className="text-sm text-gray-600">
-                    {selectedMerchant.address ? (
+              </div>
+
+              {/* Address */}
+              <div className="bg-white/5 rounded-xl p-6">
+                <h4 className="text-lg font-semibold text-white mb-4 flex items-center">
+                  <MapPin className="h-5 w-5 mr-2 text-purple-400" />
+                  Address
+                </h4>
+                <div className="text-white/60">
+                  {selectedMerchant.address ? (
+                    <div className="space-y-1">
+                      <div className="text-white font-medium">{selectedMerchant.address}</div>
                       <div>
-                        <div>{selectedMerchant.address}</div>
-                        <div>
-                          {selectedMerchant.city}, {selectedMerchant.state}{" "}
-                          {selectedMerchant.zip_code}
-                        </div>
-                        <div>{selectedMerchant.country}</div>
+                        {selectedMerchant.city}, {selectedMerchant.state}{" "}
+                        {selectedMerchant.zip_code}
                       </div>
-                    ) : (
-                      "No address provided"
-                    )}
+                      <div>{selectedMerchant.country}</div>
+                    </div>
+                  ) : (
+                    "No address provided"
+                  )}
+                </div>
+              </div>
+
+              {/* Processing Information */}
+              <div className="bg-white/5 rounded-xl p-6">
+                <h4 className="text-lg font-semibold text-white mb-4 flex items-center">
+                  <DollarSign className="h-5 w-5 mr-2 text-green-400" />
+                  Processing Information
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="text-sm text-white/70">Monthly Limit</label>
+                    <div className="text-white font-medium text-lg">
+                      {selectedMerchant.monthly_processing_limit
+                        ? `$${parseFloat(selectedMerchant.monthly_processing_limit).toLocaleString()}`
+                        : "Not set"}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm text-white/70">Fee Rate</label>
+                    <div className="text-white font-medium text-lg">
+                      {(
+                        parseFloat(selectedMerchant.processing_fee_rate) * 100
+                      ).toFixed(2)}
+                      %
+                    </div>
                   </div>
                 </div>
-                <div className="md:col-span-2">
-                  <h4 className="font-medium text-gray-900 mb-3">
-                    Processing Information
-                  </h4>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="font-medium">Monthly Limit:</span>
-                      <div className="text-gray-600">
-                        {selectedMerchant.monthly_processing_limit
-                          ? `$${parseFloat(selectedMerchant.monthly_processing_limit).toLocaleString()}`
-                          : "Not set"}
-                      </div>
-                    </div>
-                    <div>
-                      <span className="font-medium">Fee Rate:</span>
-                      <div className="text-gray-600">
-                        {(
-                          parseFloat(selectedMerchant.processing_fee_rate) * 100
-                        ).toFixed(2)}
-                        %
-                      </div>
+              </div>
+
+              {/* Timeline */}
+              <div className="bg-white/5 rounded-xl p-6">
+                <h4 className="text-lg font-semibold text-white mb-4 flex items-center">
+                  <Clock className="h-5 w-5 mr-2 text-orange-400" />
+                  Timeline
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="text-sm text-white/70">Created</label>
+                    <div className="text-white font-medium">
+                      {formatDate(selectedMerchant.created_at)}
                     </div>
                   </div>
-                </div>
-                <div className="md:col-span-2">
-                  <h4 className="font-medium text-gray-900 mb-3">Timeline</h4>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="font-medium">Created:</span>
-                      <div className="text-gray-600">
-                        {formatDate(selectedMerchant.created_at)}
-                      </div>
+                  <div>
+                    <label className="text-sm text-white/70">Last Updated</label>
+                    <div className="text-white font-medium">
+                      {formatDate(selectedMerchant.updated_at)}
                     </div>
-                    <div>
-                      <span className="font-medium">Last Updated:</span>
-                      <div className="text-gray-600">
-                        {formatDate(selectedMerchant.updated_at)}
-                      </div>
-                    </div>
-                    {selectedMerchant.loyalty_achieved_at && (
-                      <div>
-                        <span className="font-medium">Became Loyal:</span>
-                        <div className="text-gray-600">
-                          {formatDate(selectedMerchant.loyalty_achieved_at)}
-                        </div>
-                      </div>
-                    )}
                   </div>
+                  {selectedMerchant.loyalty_achieved_at && (
+                    <div className="md:col-span-2">
+                      <label className="text-sm text-white/70">Became Loyal</label>
+                      <div className="text-white font-medium flex items-center">
+                        {formatDate(selectedMerchant.loyalty_achieved_at)}
+                        <Crown className="h-4 w-4 text-yellow-400 ml-2" />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

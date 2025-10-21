@@ -480,6 +480,41 @@
     overflow: visible !important;
   }
 
+  /* Native select dropdown improvements */
+  .input-field select {
+    position: relative;
+    z-index: 100;
+  }
+
+  .input-field select:focus {
+    z-index: 1000;
+  }
+
+  /* Ensure select dropdown appears above table content */
+  .group .input-field select {
+    position: relative;
+    z-index: 100;
+  }
+
+  .group .input-field select:focus {
+    z-index: 1000;
+  }
+
+  /* Improve select dropdown styling */
+  select option {
+    background-color: #1f2937 !important;
+    color: white !important;
+    padding: 8px 12px;
+  }
+
+  select option:hover {
+    background-color: #374151 !important;
+  }
+
+  select option:checked {
+    background-color: #3b82f6 !important;
+  }
+
   .group .custom-dropdown {
     overflow: visible !important;
   }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
   Search,
@@ -43,14 +44,21 @@ function CustomDropdown({ value, onChange, options, placeholder, className = "",
   }, []);
 
   useEffect(() => {
-    if (isOpen && buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect();
-      setPosition({
-        top: rect.bottom + window.scrollY + 8,
-        left: rect.left + window.scrollX,
-        width: rect.width
-      });
+    function updatePosition() {
+      if (buttonRef.current) {
+        const rect = buttonRef.current.getBoundingClientRect();
+        setPosition({ top: rect.bottom + 8, left: rect.left, width: rect.width });
+      }
     }
+    if (isOpen) {
+      updatePosition();
+      window.addEventListener('scroll', updatePosition, true);
+      window.addEventListener('resize', updatePosition);
+    }
+    return () => {
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
+    };
   }, [isOpen]);
 
   const selectedOption = options.find(option => option.value === value) || { label: placeholder, value: '' };
@@ -77,7 +85,7 @@ function CustomDropdown({ value, onChange, options, placeholder, className = "",
         </svg>
       </button>
       
-      {isOpen && !isLoading && options.length > 0 && (
+      {isOpen && !isLoading && options.length > 0 && createPortal(
         <div 
           className="fixed dropdown-options bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl overflow-hidden"
           style={{ 
@@ -107,7 +115,8 @@ function CustomDropdown({ value, onChange, options, placeholder, className = "",
               )}
             </button>
           ))}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
