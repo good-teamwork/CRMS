@@ -1,6 +1,6 @@
 import fg from 'fast-glob';
 import type { Route } from './+types/not-found';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import { useCallback, useEffect, useState } from 'react';
 
 export async function loader({ params }: Route.LoaderArgs) {

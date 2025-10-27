@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff, Lock, Mail, ArrowRight, Sparkles, Shield, Zap } from "lucide-react";
@@ -45,7 +43,8 @@ export default function SignInPage() {
         toast.error(data.error || "Login failed");
       }
     } catch (error) {
-      toast.error("An error occurred during login");
+      console.error("Login error:", error);
+      toast.error("Could not connect to server. Make sure the backend is running on port 4000.");
     } finally {
       setIsLoading(false);
     }
