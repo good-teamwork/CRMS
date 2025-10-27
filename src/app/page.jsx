@@ -151,7 +151,7 @@ export default function Dashboard() {
   const [period, setPeriod] = useState("30");
   const [isLoaded, setIsLoaded] = useState(false);
   const [hoveredCard, setHoveredCard] = useState(null);
-  const useMock = true; // Force mock data for testing
+  const useMock = false; // Use real database data
   const navigate = useNavigate();
   const user = getCurrentUser();
 

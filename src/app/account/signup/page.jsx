@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Eye, EyeOff, Lock, Mail, User, AlertCircle, CheckCircle, ArrowRight, Sparkles, Shield, Zap, Crown, Users, Headphones } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, User, AlertCircle, CheckCircle, ArrowRight, Sparkles, Shield, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { setAuthToken } from "../../../utils/auth.js";
 
@@ -10,8 +10,7 @@ export default function SignUpPage() {
     name: "",
     email: "",
     password: "",
-    confirmPassword: "",
-    role: "admin"
+    confirmPassword: ""
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -92,7 +91,7 @@ export default function SignUpPage() {
           name: formData.name.trim(),
           email: formData.email.trim().toLowerCase(),
           password: formData.password,
-          role: formData.role
+          role: 'user' // Default role for new users
         }),
       });
 
@@ -120,41 +119,13 @@ export default function SignUpPage() {
         }
       }
     } catch (error) {
-      // Fallback: Use mock authentication for demo
-      console.log('API not available, using mock auth');
-      const mockUser = {
-        sub: '2',
-        email: formData.email || 'demo@example.com',
-        name: formData.name || 'Demo User',
-        role: formData.role || 'admin',
-        exp: Date.now() + (24 * 60 * 60 * 1000) // 24 hours
-      };
-      const token = btoa(JSON.stringify(mockUser));
-      setAuthToken(token);
-      toast.success("Welcome! Demo mode active.");
-      navigate("/");
+      console.error("Signup error:", error);
+      toast.error("An error occurred during signup. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const getRoleIcon = (role) => {
-    switch (role) {
-      case 'admin': return <Crown className="h-4 w-4" />;
-      case 'manager': return <Users className="h-4 w-4" />;
-      case 'support': return <Headphones className="h-4 w-4" />;
-      default: return <Shield className="h-4 w-4" />;
-    }
-  };
-
-  const getRoleDescription = (role) => {
-    switch (role) {
-      case 'admin': return 'Full system access and control';
-      case 'manager': return 'Manage teams and oversee operations';
-      case 'support': return 'Customer support and assistance';
-      default: return 'Select your role';
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
@@ -311,31 +282,6 @@ export default function SignUpPage() {
                 )}
               </div>
 
-              <div>
-                <label htmlFor="role" className="block text-sm font-medium text-white/90 mb-2">
-                  Role
-                </label>
-                <div className="input-field gradient-border shimmer">
-                  <div className="input-icon">
-                    {getRoleIcon(formData.role)}
-                  </div>
-                  <select
-                    id="role"
-                    name="role"
-                    value={formData.role}
-                    onChange={handleInputChange}
-                    className="appearance-none"
-                  >
-                    <option value="admin" className="bg-slate-800 text-white">Admin</option>
-                    <option value="manager" className="bg-slate-800 text-white">Manager</option>
-                    <option value="support" className="bg-slate-800 text-white">Support</option>
-                  </select>
-                </div>
-                <p className="mt-2 text-xs text-white/60 flex items-center">
-                  <CheckCircle className="h-3 w-3 mr-1" />
-                  {getRoleDescription(formData.role)}
-                </p>
-              </div>
             </div>
 
             <button

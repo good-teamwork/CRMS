@@ -128,10 +128,10 @@ app.post('/api/auth/signup', async (req, res) => {
     // Hash password
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // Create user
+    // Create user - always set role to 'user', never allow 'admin'
     const newUser = await sql`
-      INSERT INTO users (name, email, password_hash, role, is_active, created_at)
-      VALUES (${name}, ${email.toLowerCase()}, ${passwordHash}, ${role || 'user'}, true, NOW())
+      INSERT INTO users (name, email, password_hash, role, is_active)
+      VALUES (${name}, ${email.toLowerCase()}, ${passwordHash}, 'user', true)
       RETURNING id, name, email, role
     `;
 
@@ -195,21 +195,232 @@ app.get('/api/dashboard/stats', async (req, res) => {
     const { period = '30' } = req.query;
     const days = parseInt(period) || 30;
     
-    // Get merchant stats
-    const merchants = await sql`
-      SELECT 
-        COUNT(*) as total_merchants,
-        COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '${days} days') as new_merchants,
-        COUNT(*) FILTER (WHERE status = 'active') as active_merchants,
-        COUNT(*) FILTER (WHERE status = 'pending') as pending_merchants,
-        COUNT(*) FILTER (WHERE status = 'under_review') as under_review_merchants
-      FROM merchants
-    `;
+    let merchants = { total_merchants: 0, new_merchants: 0, active_merchants: 0, pending_merchants: 0, under_review_merchants: 0 };
+    let transactions = { total_volume: 0, recent_volume: 0, total_revenue: 0, recent_revenue: 0 };
+    let support = { open_tickets: 0, high_priority_open: 0 };
+    let mobileApps = { active_apps: 0, apps_with_free_version: 0, total_downloads: 0, total_active_users: 0 };
+    let appTransactions = { total_app_revenue: 0, recent_app_revenue: 0, free_version_transactions: 0, total_app_transactions: 0 };
+    let dailyVolume = [];
+    
+    try {
+      // Get merchants stats
+      const merchantsData = await sql`
+        SELECT 
+          COUNT(*) as total_merchants,
+          COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '${days} days') as new_merchants,
+          COUNT(*) FILTER (WHERE status = 'active') as active_merchants,
+          COUNT(*) FILTER (WHERE status = 'pending') as pending_merchants,
+          COUNT(*) FILTER (WHERE status = 'under_review') as under_review_merchants,
+          COALESCE(SUM(CASE WHEN created_at::date >= CURRENT_DATE - INTERVAL '${days} days' THEN 1 ELSE 0 END), 0) as loyal_merchants
+        FROM merchants
+      `;
+      if (merchantsData && merchantsData[0]) {
+        merchants = merchantsData[0];
+      }
+    } catch (err) {
+      console.log('Merchants query error:', err.message);
+    }
 
-    res.json({ merchants: merchants[0] });
+    try {
+      // Get transactions stats
+      const transactionsData = await sql`
+        SELECT 
+          COALESCE(SUM(amount), 0) as total_volume,
+          COALESCE(SUM(CASE WHEN created_at > NOW() - INTERVAL '7 days' THEN amount ELSE 0 END), 0) as recent_volume,
+          COALESCE(SUM(processing_fee), 0) as total_revenue,
+          COALESCE(SUM(CASE WHEN created_at > NOW() - INTERVAL '7 days' THEN processing_fee ELSE 0 END), 0) as recent_revenue
+        FROM processing_transactions
+      `;
+      if (transactionsData && transactionsData[0]) {
+        transactions = transactionsData[0];
+      }
+    } catch (err) {
+      console.log('Transactions query error:', err.message);
+    }
+
+    try {
+      // Get support tickets stats
+      const supportData = await sql`
+        SELECT 
+          COUNT(*) FILTER (WHERE status IN ('open', 'in_progress')) as open_tickets,
+          COUNT(*) FILTER (WHERE priority = 'high' AND status IN ('open', 'in_progress')) as high_priority_open
+        FROM support_tickets
+      `;
+      if (supportData && supportData[0]) {
+        support = supportData[0];
+      }
+    } catch (err) {
+      console.log('Support tickets query error:', err.message);
+    }
+
+    try {
+      // Get mobile apps stats
+      const mobileAppsData = await sql`
+        SELECT 
+          COUNT(*) FILTER (WHERE is_active = true) as active_apps,
+          COUNT(*) FILTER (WHERE free_version_available = true) as apps_with_free_version,
+          COALESCE(SUM(downloads_count), 0) as total_downloads,
+          COALESCE(SUM(active_users), 0) as total_active_users
+        FROM mobile_applications
+      `;
+      if (mobileAppsData && mobileAppsData[0]) {
+        mobileApps = mobileAppsData[0];
+      }
+    } catch (err) {
+      console.log('Mobile apps query error:', err.message);
+    }
+
+    try {
+      // Get app transactions stats
+      const appTransactionsData = await sql`
+        SELECT 
+          COALESCE(SUM(revenue), 0) as total_app_revenue,
+          COALESCE(SUM(CASE WHEN transaction_date > NOW() - INTERVAL '7 days' THEN revenue ELSE 0 END), 0) as recent_app_revenue,
+          COUNT(*) FILTER (WHERE is_free_version = true) as free_version_transactions,
+          COUNT(*) as total_app_transactions
+        FROM app_transactions
+      `;
+      if (appTransactionsData && appTransactionsData[0]) {
+        appTransactions = appTransactionsData[0];
+      }
+    } catch (err) {
+      console.log('App transactions query error:', err.message);
+    }
+
+    try {
+      // Get daily volume for chart
+      const dailyVolumeData = await sql`
+        SELECT 
+          DATE(created_at) as date,
+          SUM(amount) as daily_volume
+        FROM processing_transactions
+        WHERE created_at > NOW() - INTERVAL '${days} days'
+        GROUP BY DATE(created_at)
+        ORDER BY date ASC
+      `;
+      dailyVolume = dailyVolumeData || [];
+    } catch (err) {
+      console.log('Daily volume query error:', err.message);
+    }
+
+    const stats = {
+      merchants,
+      transactions,
+      support,
+      mobileApps,
+      appTransactions,
+      dailyVolume,
+    };
+
+    res.json(stats);
   } catch (error) {
     console.error("Dashboard stats error:", error);
     res.status(500).json({ error: "Failed to fetch stats" });
+  }
+});
+
+// Get mobile apps
+app.get('/api/mobile-apps', async (req, res) => {
+  try {
+    const apps = await sql`
+      SELECT id, app_name, app_type, description, status, is_free_version, total_downloads, active_users, created_at
+      FROM mobile_applications
+      ORDER BY created_at DESC
+    `;
+    res.json(apps);
+  } catch (error) {
+    console.error("Mobile apps error:", error);
+    res.status(500).json({ error: "Failed to fetch mobile apps" });
+  }
+});
+
+// Create new mobile app
+app.post('/api/mobile-apps', async (req, res) => {
+  try {
+    const { app_name, app_type, description, status, is_free_version, total_downloads, active_users } = req.body;
+    
+    const newApp = await sql`
+      INSERT INTO mobile_applications (app_name, app_type, description, status, is_free_version, total_downloads, active_users)
+      VALUES (${app_name}, ${app_type || null}, ${description || null}, ${status || 'active'}, ${is_free_version || false}, ${total_downloads || 0}, ${active_users || 0})
+      RETURNING *
+    `;
+    
+    res.json(newApp[0]);
+  } catch (error) {
+    console.error("Create mobile app error:", error);
+    res.status(500).json({ error: "Failed to create mobile app" });
+  }
+});
+
+// Update mobile app
+app.put('/api/mobile-apps/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { app_name, app_type, description, status, is_free_version, total_downloads, active_users } = req.body;
+    
+    const updatedApp = await sql`
+      UPDATE mobile_applications 
+      SET app_name = ${app_name}, app_type = ${app_type}, description = ${description}, status = ${status},
+          is_free_version = ${is_free_version}, total_downloads = ${total_downloads}, active_users = ${active_users}
+      WHERE id = ${id}
+      RETURNING *
+    `;
+    
+    res.json(updatedApp[0]);
+  } catch (error) {
+    console.error("Update mobile app error:", error);
+    res.status(500).json({ error: "Failed to update mobile app" });
+  }
+});
+
+// Delete mobile app
+app.delete('/api/mobile-apps/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await sql`DELETE FROM mobile_applications WHERE id = ${id}`;
+    res.json({ message: "Mobile app deleted" });
+  } catch (error) {
+    console.error("Delete mobile app error:", error);
+    res.status(500).json({ error: "Failed to delete mobile app" });
+  }
+});
+
+// Get merchants
+app.get('/api/merchants', async (req, res) => {
+  try {
+    const merchants = await sql`
+      SELECT * FROM merchants ORDER BY created_at DESC
+    `;
+    res.json(merchants);
+  } catch (error) {
+    console.error("Merchants error:", error);
+    res.status(500).json({ error: "Failed to fetch merchants" });
+  }
+});
+
+// Get transactions
+app.get('/api/transactions', async (req, res) => {
+  try {
+    const transactions = await sql`
+      SELECT * FROM processing_transactions ORDER BY processed_at DESC
+    `;
+    res.json(transactions);
+  } catch (error) {
+    console.error("Transactions error:", error);
+    res.status(500).json({ error: "Failed to fetch transactions" });
+  }
+});
+
+// Get support tickets
+app.get('/api/support', async (req, res) => {
+  try {
+    const tickets = await sql`
+      SELECT * FROM support_tickets ORDER BY created_at DESC
+    `;
+    res.json(tickets);
+  } catch (error) {
+    console.error("Support tickets error:", error);
+    res.status(500).json({ error: "Failed to fetch support tickets" });
   }
 });
 

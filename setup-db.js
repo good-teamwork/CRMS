@@ -16,12 +16,26 @@ async function setupDatabase() {
   try {
     console.log('📊 Setting up Neon database...\n');
 
-    // Read schema file
-    const schema = fs.readFileSync(join(__dirname, 'users_schema.sql'), 'utf8');
-    
-    // Execute schema
-    await sql(schema);
-    console.log('✅ Database schema created');
+    // Create users table
+    await sql`
+      CREATE TABLE IF NOT EXISTS users (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          email VARCHAR(255) UNIQUE NOT NULL,
+          password_hash VARCHAR(255) NOT NULL,
+          name VARCHAR(255),
+          role VARCHAR(50) DEFAULT 'admin' CHECK (role IN ('admin', 'manager', 'support')),
+          is_active BOOLEAN DEFAULT TRUE,
+          last_login TIMESTAMP WITH TIME ZONE,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      )
+    `;
+    console.log('✅ Users table created');
+
+    // Create indexes
+    await sql`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_users_role ON users(role)`;
+    console.log('✅ Indexes created');
 
     // Hash password for demo user
     const demoPassword = 'admin123';

@@ -19,17 +19,7 @@ export function removeAuthToken() {
 export function isAuthenticated() {
   const token = getAuthToken();
   if (!token) {
-    // Auto-create mock token for demo
-    const mockUser = {
-      sub: '1',
-      email: 'admin@demo.com',
-      name: 'Demo Admin',
-      role: 'admin',
-      exp: Date.now() + (24 * 60 * 60 * 1000) // 24 hours
-    };
-    const mockToken = btoa(JSON.stringify(mockUser));
-    setAuthToken(mockToken);
-    return true;
+    return false;
   }
   
   try {
@@ -43,17 +33,7 @@ export function isAuthenticated() {
 export function getCurrentUser() {
   const token = getAuthToken();
   if (!token) {
-    // If no token, set a mock user for demo purposes
-    const mockUser = {
-      id: '1',
-      email: 'admin@demo.com',
-      name: 'Demo Admin',
-      role: 'admin',
-      exp: Date.now() + (24 * 60 * 60 * 1000) // 24 hours
-    };
-    const mockToken = btoa(JSON.stringify(mockUser));
-    setAuthToken(mockToken);
-    return mockUser;
+    return null;
   }
   
   try {
